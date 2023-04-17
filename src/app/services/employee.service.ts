@@ -14,6 +14,11 @@ export class EmployeeService {
     return this.http.post("http://localhost:3000/employees",data);
   }
 
+  updateEmployees(id:any,data:any): Observable<any>
+  {
+    return this.http.put(`http://localhost:3000/employees/${id}`,data);
+  }
+
   getEmployeeList():Observable<any>{
     return this.http.get('http://localhost:3000/employees');
   }

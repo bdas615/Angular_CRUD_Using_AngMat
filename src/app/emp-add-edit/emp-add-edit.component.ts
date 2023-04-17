@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { EmployeeService } from '../services/employee.service';
 import { DialogRef } from '@angular/cdk/dialog';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { CoreService } from '../core/core.service';
 
 @Component({
   selector: 'app-emp-add-edit',
@@ -23,8 +24,12 @@ export class EmpAddEditComponent implements OnInit{
 
   constructor(private fb:FormBuilder,
               private empServ:EmployeeService,
-              private _dialogRef:MatDialogRef<EmpAddEditComponent>) {
-    this.empForm = this.fb.group({
+              private _dialogRef:MatDialogRef<EmpAddEditComponent>,
+              @Inject(MAT_DIALOG_DATA) public data:any,
+              private coreServ:CoreService 
+              )  
+  {
+      this.empForm = this.fb.group({
       firstName: '',
       lastName:'',
       email:'',
@@ -37,24 +42,40 @@ export class EmpAddEditComponent implements OnInit{
     });
   }
 
-  ngOnInit(){  }
+  ngOnInit():void { 
+    this.empForm.patchValue(this.data);
+   }
 
-  onFormSubmit(){
-
-      console.log(this.empForm.value);
-
+  onFormSubmit()
+  {
+     if(this.empForm.valid)
+     {
+      if(this.data)
+      {
+      this.empServ.updateEmployees(this.data.id,this.empForm.value).subscribe({
+        next:(res:any)=>{
+          console.log(res);
+          this.coreServ.openSnackBar('Employee details updated');
+          this._dialogRef.close(true);
+          
+        },
+        error:(err:any)=>{
+          console.log(err);
+        },
+      });
+     } 
+     else
+     {
       this.empServ.addEmployees(this.empForm.value).subscribe({
         next:(res:any)=>{
-          alert('Employee added successfully');
+          this.coreServ.openSnackBar('Employee added successfully');
           this._dialogRef.close(true);
         },
         error:(err:any)=>{
           console.log(err);
         }
       })
-
-
+    }
+   }
   }
-
-
 }
